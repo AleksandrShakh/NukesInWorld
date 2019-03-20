@@ -63,7 +63,7 @@ def showplot(features):
     latitude = re.findall(r"lat=([\-\d\.]*)" ,strLrgstPlace)
     longtide = re.findall(r"long=([\-\d\.]*)" ,strLrgstPlace)
     url = 'https://www.google.com/maps/embed/v1/view'
-    params = dict(key='AIzaSyAPi0wzs7IlNc4nlL3atU7iCd-A9QXfuHs',center=latitude + longtide,zoom=18,maptype='satellite')
+    params = dict(key='MYKEY',center=latitude + longtide,zoom=18,maptype='satellite')
     paramsStr = str(params)
     maps = (url+paramsStr)
     print (maps)
