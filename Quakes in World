@@ -1,0 +1,81 @@
+from dataclasses import dataclass
+from operator import attrgetter
+import urllib.request
+import json
+import datetime
+import matplotlib.pyplot as plt
+import smtplib
+import webbrowser
+  
+def send_email():
+    try:
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login('pythonpython153@gmail.com', 'B"(Vx3hTpgp`)2Re')
+        rcvr = input('\nWhere do you want to recieve email?')
+        message = ','.join(map(str, features))
+        server.sendmail('pythonpython153@gmail.com', rcvr , message)
+        print("\nSuccessfully sent email to", rcvr)
+    except smtplib.SMTPException:
+        print("\nError: unable to send email to", rcvr)
+
+#Creating a dataclass with all the info that we gonna use
+@dataclass 
+class Feature:
+    place: str
+    long: float
+    lat: float
+    depth: float
+    mag: float
+    
+    #Predefyning the variable that are gonna hold info from our json file    
+    @classmethod
+    def get_json(cls, featurejson):
+        place = featurejson["properties"]["place"] #Location
+        long, lat, depth = map(float, featurejson['geometry']['coordinates']) #Longitude, latitude, and depth
+        mag = float(featurejson["properties"]["mag"]) #Magnitude
+        return cls(place, long, lat, depth, mag)
+
+#Getting information from the json file URL 
+def get_info(url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_week.geojson"):
+    with urllib.request.urlopen(url) as resp:
+        data = json.loads(resp.read())
+
+    for feature in data["features"]:
+        yield Feature.get_json(feature)
+    
+#Displaying the info in text format for now,s        
+def show_info(features):
+    for feat in sorted(features, key=attrgetter("mag"), reverse = True):#Sorting by the magnitude in the reversed order
+        print(feat)#Printing the result
+    
+#Drawing the plot        
+def showplot(features):
+    loc = [feat.place for feat in sorted(features, key=attrgetter("mag"))]#Location
+    magn = [feat.mag for feat in features] #Magnitude
+    long = [feat.long for feat in features]
+    lat = [feat.lat for feat in features]
+    
+    y_pos = range(len(magn))
+    lrgstPlace = features[0]
+    strLrgstPlace = str(lrgstPlace)
+    #print(strLrgstPlace)
+    latitude = re.findall(r"lat=([\-\d\.]*)" ,strLrgstPlace)
+    longtide = re.findall(r"long=([\-\d\.]*)" ,strLrgstPlace)
+    url = 'https://www.google.com/maps/embed/v1/view'
+    params = dict(key='AIzaSyAPi0wzs7IlNc4nlL3atU7iCd-A9QXfuHs',center=latitude + longtide,zoom=18,maptype='satellite')
+    paramsStr = str(params)
+    maps = (url+paramsStr)
+    print (maps)
+    webbrowser.open(maps)
+    
+    plt.bar(y_pos, magn)
+    plt.xticks(y_pos, loc)
+    plt.ylabel('Magnitude')
+    plt.show()
+
+    
+features = list(get_info()) #Storing our json information into a list 'Features'
+send_email()
+show_info(features) #Displaying information in text format
+showplot(features) #Displaying information in format of a plot
